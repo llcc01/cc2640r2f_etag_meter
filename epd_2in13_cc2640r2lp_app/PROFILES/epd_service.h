@@ -24,6 +24,12 @@
 // EPD RXTX service
 #define EPD_RXTX_UUID               0xFFFE
 
+// meter
+#define EPD_RETAIN_DISTANCE_UUID    0xFF00
+
+// meter
+extern uint16_t retainDistance;
+
 // Callback when a characteristic value has changed
 typedef void (*EpdServiceChange_t)(uint16_t connHandle, uint8_t paramID,
                                    uint16_t len, uint8_t *pValue);
