@@ -1,16 +1,16 @@
 /******************************************************************************
 
- @file       simple_peripheral.h
+ @file  simple_peripheral.h
 
  @brief This file contains the Simple Peripheral sample application
         definitions and prototypes.
 
- Group: CMCU, SCS
- Target Device: CC2640R2
+ Group: WCS, BTS
+ Target Device: cc2640r2
 
  ******************************************************************************
  
- Copyright (c) 2013-2017, Texas Instruments Incorporated
+ Copyright (c) 2013-2021, Texas Instruments Incorporated
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
- Release Name: simplelink_cc2640r2_sdk_1_40_00_45
- Release Date: 2017-07-20 17:16:59
+ 
+ 
  *****************************************************************************/
 
 #ifndef SIMPLEBLEPERIPHERAL_H
@@ -53,21 +53,31 @@ extern "C"
 {
 #endif
 
+/*********************************************************************
+ * INCLUDES
+ */
+
+/*********************************************************************
+*  EXTERNAL VARIABLES
+*/
+
+/*********************************************************************
+ * CONSTANTS
+ */
+
+/*********************************************************************
+ * MACROS
+ */
+
+/*********************************************************************
+ * FUNCTIONS
+ */
+
 /*
  * Task creation function for the Simple Peripheral.
  */
 extern void SimpleBLEPeripheral_createTask(void);
 
-#if !defined(Display_DISABLE_ALL)
-/*
- * Functions for menu action
- */
-/* Actions for Menu: Start Device */
-bool SimpleBLEPeripheral_doStartDevice(uint8 index);
-
-/* Actions for Menu: Set PHY - Select */
-bool SimpleBLEPeripheral_doSetPhy(uint8 index);
-#endif  // !Display_DISABLE_ALL
 
 /*********************************************************************
 *********************************************************************/

@@ -5,6 +5,7 @@
 #include <icall.h>
 
 /* This Header file contains all BLE API and icall structure definition */
+#include "_hal_types.h"
 #include "icall_ble_api.h"
 
 #include <ti/sysbios/hal/Seconds.h> // Seconds_set
@@ -12,6 +13,7 @@
 #include "epd_driver.h" // epd_battery, epd_temperature
 #include "epd_service.h"
 #include "task_epd.h" // EPDTask_Update
+#include "epd_2in13.h"
 
 // meter
 uint16_t retainDistance;
@@ -22,16 +24,16 @@ CONST uint8 EpdServiceUUID[ATT_BT_UUID_SIZE] = {
     HI_UINT16(EPD_SERVICE_SERV_UUID),
 };
 
-// Unix Epoch UUID
-CONST uint8 EpdEpochUUID[ATT_BT_UUID_SIZE] = {
-    LO_UINT16(EPD_EPOCH_UUID),
-    HI_UINT16(EPD_EPOCH_UUID),
-};
+// // Unix Epoch UUID
+// CONST uint8 EpdEpochUUID[ATT_BT_UUID_SIZE] = {
+//     LO_UINT16(EPD_EPOCH_UUID),
+//     HI_UINT16(EPD_EPOCH_UUID),
+// };
 
-CONST uint8 EpdUtcOffsetUUID[ATT_BT_UUID_SIZE] = {
-    LO_UINT16(EPD_UTC_OFFSET_UUID),
-    HI_UINT16(EPD_UTC_OFFSET_UUID),
-};
+// CONST uint8 EpdUtcOffsetUUID[ATT_BT_UUID_SIZE] = {
+//     LO_UINT16(EPD_UTC_OFFSET_UUID),
+//     HI_UINT16(EPD_UTC_OFFSET_UUID),
+// };
 
 CONST uint8 EpdBattUUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(EPD_BATT_UUID),
@@ -43,10 +45,10 @@ CONST uint8 EpdTempUUID[ATT_BT_UUID_SIZE] = {
     HI_UINT16(EPD_TEMP_UUID),
 };
 
-CONST uint8 EpdRtcCollabUUID[ATT_BT_UUID_SIZE] = {
-    LO_UINT16(EPD_RTC_COLLAB_UUID),
-    HI_UINT16(EPD_RTC_COLLAB_UUID),
-};
+// CONST uint8 EpdRtcCollabUUID[ATT_BT_UUID_SIZE] = {
+//     LO_UINT16(EPD_RTC_COLLAB_UUID),
+//     HI_UINT16(EPD_RTC_COLLAB_UUID),
+// };
 
 CONST uint8 EpdRxTxUUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(EPD_RXTX_UUID),
@@ -65,13 +67,13 @@ static gattCharCfg_t *EpdDataConfig;
 // Service declaration
 static CONST gattAttrType_t EpdServiceDecl = {ATT_BT_UUID_SIZE, EpdServiceUUID};
 
-// static uint8 EpochDesc[] = "Unix Epoch";
-static uint8 EpochProps = GATT_PROP_READ | GATT_PROP_WRITE;
-static uint32 EpochLastVal = 0; // last value of Unix Epoch
+// // static uint8 EpochDesc[] = "Unix Epoch";
+// static uint8 EpochProps = GATT_PROP_READ | GATT_PROP_WRITE;
+// static uint32 EpochLastVal = 0; // last value of Unix Epoch
 
-// static uint8 UtcOffDesc[] = "UTC Offset Mins";
-static uint8 UtcOffProps = GATT_PROP_READ | GATT_PROP_WRITE;
-// static int8  UtcOffVal[4] = {0};
+// // static uint8 UtcOffDesc[] = "UTC Offset Mins";
+// static uint8 UtcOffProps = GATT_PROP_READ | GATT_PROP_WRITE;
+// // static int8  UtcOffVal[4] = {0};
 
 // static uint8 BattDesc[] = "Battery mv";
 static uint8 BattProps = GATT_PROP_READ;
@@ -81,9 +83,9 @@ static uint8 BattProps = GATT_PROP_READ;
 static uint8 TempProps = GATT_PROP_READ;
 // static int8  TempVal[1] = {0};
 
-// RTC Collaboration
-static uint8 RtcCollabProps = GATT_PROP_READ | GATT_PROP_WRITE;
-// static int8 RtcCollabVal[1] = {0};
+// // RTC Collaboration
+// static uint8 RtcCollabProps = GATT_PROP_READ | GATT_PROP_WRITE;
+// // static int8 RtcCollabVal[1] = {0};
 
 // RxTx service
 static uint8 RxTxProps = GATT_PROP_READ | GATT_PROP_WRITE;
@@ -100,20 +102,20 @@ static gattAttribute_t EpdServiceAttrTbl[] = {
      (uint8_t *)&EpdServiceDecl},
 
     // Epoch Characteristic Declaration
-    {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &EpochProps},
-    // Epoch Characteristic Value
-    {{ATT_BT_UUID_SIZE, EpdEpochUUID},
-     GATT_PERMIT_READ | GATT_PERMIT_WRITE,
-     0,
-     NULL},
+    // {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &EpochProps},
+    // // Epoch Characteristic Value
+    // {{ATT_BT_UUID_SIZE, EpdEpochUUID},
+    //  GATT_PERMIT_READ | GATT_PERMIT_WRITE,
+    //  0,
+    //  NULL},
 
-    // Characteristic Declaration
-    {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &UtcOffProps},
-    // Characteristic Value
-    {{ATT_BT_UUID_SIZE, EpdUtcOffsetUUID},
-     GATT_PERMIT_READ | GATT_PERMIT_WRITE,
-     0,
-     NULL},
+    // // Characteristic Declaration
+    // {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &UtcOffProps},
+    // // Characteristic Value
+    // {{ATT_BT_UUID_SIZE, EpdUtcOffsetUUID},
+    //  GATT_PERMIT_READ | GATT_PERMIT_WRITE,
+    //  0,
+    //  NULL},
 
     // Characteristic Declaration
     {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &BattProps},
@@ -126,12 +128,12 @@ static gattAttribute_t EpdServiceAttrTbl[] = {
     {{ATT_BT_UUID_SIZE, EpdTempUUID}, GATT_PERMIT_READ, 0, NULL},
 
     // Characteristic Declaration
-    {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &RtcCollabProps},
-    // Characteristic Value
-    {{ATT_BT_UUID_SIZE, EpdRtcCollabUUID},
-     GATT_PERMIT_READ | GATT_PERMIT_WRITE,
-     0,
-     NULL},
+    // {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &RtcCollabProps},
+    // // Characteristic Value
+    // {{ATT_BT_UUID_SIZE, EpdRtcCollabUUID},
+    //  GATT_PERMIT_READ | GATT_PERMIT_WRITE,
+    //  0,
+    //  NULL},
 
     // Characteristic Declaration
     {{ATT_BT_UUID_SIZE, characterUUID}, GATT_PERMIT_READ, 0, &RxTxProps},
@@ -262,40 +264,46 @@ static bStatus_t EPDService_ReadAttrCB(uint16_t connHandle,
   }
 
   switch (uuid) {
-  case EPD_EPOCH_UUID: {
-    uint32_t t = Seconds_get();
-    *pLen = sizeof(t);
-    memcpy(pValue, &t, *pLen);
-    break;
-  }
+  // case EPD_EPOCH_UUID: {
+  //   uint32_t t = Seconds_get();
+  //   *pLen = sizeof(t);
+  //   memcpy(pValue, &t, *pLen);
+  //   break;
+  // }
 
-  case EPD_UTC_OFFSET_UUID: {
-    int32_t t = utc_offset_mins;
-    *pLen = sizeof(t);
-    memcpy(pValue, &t, *pLen);
-    break;
-  }
+  // case EPD_UTC_OFFSET_UUID: {
+  //   int32_t t = utc_offset_mins;
+  //   *pLen = sizeof(t);
+  //   memcpy(pValue, &t, *pLen);
+  //   break;
+  // }
 
   case EPD_BATT_UUID: {
     uint16_t v = INTFRAC2MV(epd_battery);
-    *pLen = sizeof(v);
-    memcpy(pValue, &v, *pLen);
+    if (v > 3000) {
+      v = 3000;
+    }
+    uint8 v_percent = (v - 2500) * 100 / (3000 - 2500);
+    *pLen = sizeof(v_percent);
+    memcpy(pValue, &v_percent, *pLen);
     break;
   }
 
   case EPD_TEMP_UUID: {
+    epd_temperature = EPD_2IN13_ReadTemp();
     uint8_t v = epd_temperature;
-    *pLen = sizeof(v);
-    memcpy(pValue, &v, *pLen);
+    int16_t t = v * 100;
+    *pLen = sizeof(t);
+    memcpy(pValue, &t, *pLen);
     break;
   }
 
-  case EPD_RTC_COLLAB_UUID: {
-    int8_t v = RTC_GetCollaborate();
-    *pLen = sizeof(v);
-    memcpy(pValue, &v, *pLen);
-    break;
-  }
+  // case EPD_RTC_COLLAB_UUID: {
+  //   int8_t v = RTC_GetCollaborate();
+  //   *pLen = sizeof(v);
+  //   memcpy(pValue, &v, *pLen);
+  //   break;
+  // }
 
   case EPD_RXTX_UUID: {
     // send ble_data to BLE.
@@ -338,36 +346,36 @@ static bStatus_t EPDService_WriteAttrCB(uint16_t connHandle,
   }
 
   switch (uuid) {
-  case EPD_EPOCH_UUID: {
-    if (len == 4) {
-      uint32_t t = *(uint32_t *)pValue;
-      Seconds_set(t);
-      EpochLastVal = t;
+  // case EPD_EPOCH_UUID: {
+  //   if (len == 4) {
+  //     uint32_t t = *(uint32_t *)pValue;
+  //     Seconds_set(t);
+  //     EpochLastVal = t;
 
-      // notify EPD to refresh
-      clock_last = 0xff;
-      EPDTask_Update();
-    }
-    break;
-  }
+  //     // notify EPD to refresh
+  //     clock_last = 0xff;
+  //     EPDTask_Update();
+  //   }
+  //   break;
+  // }
 
-  case EPD_UTC_OFFSET_UUID: {
-    if (len == 4) {
-      int32_t t = *(int32_t *)pValue;
-      if ((t >= (-12 * 60)) && (t <= (12 * 60))) { // +/- 12 hrs
-        utc_offset_mins = t;
-      }
-    }
-    break;
-  }
+  // case EPD_UTC_OFFSET_UUID: {
+  //   if (len == 4) {
+  //     int32_t t = *(int32_t *)pValue;
+  //     if ((t >= (-12 * 60)) && (t <= (12 * 60))) { // +/- 12 hrs
+  //       utc_offset_mins = t;
+  //     }
+  //   }
+  //   break;
+  // }
 
-  case EPD_RTC_COLLAB_UUID: {
-    if (len == 1) {
-      int8_t v = *(int8_t *)pValue;
-      RTC_SetCollaborate(v);
-    }
-    break;
-  }
+  // case EPD_RTC_COLLAB_UUID: {
+  //   if (len == 1) {
+  //     int8_t v = *(int8_t *)pValue;
+  //     RTC_SetCollaborate(v);
+  //   }
+  //   break;
+  // }
 
   case EPD_RXTX_UUID: {
     if (len < 64) {

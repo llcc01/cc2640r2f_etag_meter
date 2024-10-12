@@ -6,13 +6,14 @@
 #include <ti/sysbios/knl/Clock.h>   // Clock_tickPeriod
 #include <ti/sysbios/knl/Task.h>    // Task_sleep
 #include <driverlib/cpu.h>  // CPUDelay
+#include <driverlib/aon_batmon.h>
 
 #include <osal.h>
 #include <osal_snv.h>       // osal_snv_write
 
-#include "epd_2in13.h"
 #include "epd_driver.h"
 #include "task_epd.h"
+#include "epd_2in13.h"
 
 // gpio setting
 static PIN_Handle GPIOHandle = NULL;
@@ -303,31 +304,31 @@ int8_t RTC_GetCollaborate( void )
 #endif
 
 // Select a EPD
-#if defined(EPD_2IN13_SSD1680)
+// #if defined(EPD_2IN13_SSD1680)
 
-#include "epd_2in13.c"
+// #include "epd_2in13.c"
 
-#elif defined(EPD_2IN13_SSD1680_BW)
+// #elif defined(EPD_2IN13_SSD1680_BW)
 
-#include "epd_2in13_bw.c"
+// #include "epd_2in13_bw.c"
 
-#elif defined(EPD_2IN9_SSD1680A)
+// #elif defined(EPD_2IN9_SSD1680A)
 
-#include "epd_2in9.c"
+// #include "epd_2in9.c"
 
-#elif defined(EPD_2IN9_SSD1680_BW)
+// #elif defined(EPD_2IN9_SSD1680_BW)
 
-#include "epd_2in9_bw.c"
+// #include "epd_2in9_bw.c"
 
-#elif defined(EPD_2IN66_SSD1680A)
+// #elif defined(EPD_2IN66_SSD1680A)
 
-#include "epd_2in66.c"
+// #include "epd_2in66.c"
 
-#else
+// #else
 
-#error "EPD not support."
+// #error "EPD not support."
 
-#endif
+// #endif
 
 // do command from BLE
 void EPD_Command(const uint8_t *cmd, int cmd_len)

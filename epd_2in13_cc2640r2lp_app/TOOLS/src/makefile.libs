@@ -1,6 +1,6 @@
 #
 # This file was generated based on the configuration script:
-#     /home/lc/ccs_workspace_v12/epd_2in13_cc2640r2lp_app/TOOLS/app_ble.cfg
+#     /home/lc/git/cc2640r2f_etag_meter/epd_2in13_cc2640r2lp_app/TOOLS/app_ble.cfg
 #
 # This makefile may be included in other makefiles that need to build
 # the libraries containing the compiled source files generated as
@@ -14,7 +14,7 @@
 #
 # The absolute path to the generated source directory (at the time the
 # sources were generated) is:
-#    /home/lc/ccs_workspace_v12/epd_2in13_cc2640r2lp_app/TOOLS/src
+#    /home/lc/git/cc2640r2f_etag_meter/epd_2in13_cc2640r2lp_app/TOOLS/src
 #
 GEN_SRC_DIR ?= ../TOOLS/src
 

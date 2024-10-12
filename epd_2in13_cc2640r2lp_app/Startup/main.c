@@ -90,7 +90,7 @@ bleUserCfg_t user0Cfg = BLE_USER_CFG;
 /*******************************************************************************
  * MACROS
  */
-
+#define Display_DISABLE_ALL
 /*******************************************************************************
  * CONSTANTS
  */
@@ -140,7 +140,7 @@ PIN_Handle radCtrlHandle;
 
 extern void AssertHandler(uint8 assertCause, uint8 assertSubcause);
 
-extern Display_Handle dispHandle;
+// extern Display_Handle dispHandle;
 
 /*******************************************************************************
  * @fn          Main
