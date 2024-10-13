@@ -8,7 +8,7 @@
  Target Device: cc2640r2
 
  ******************************************************************************
- 
+
  Copyright (c) 2013-2021, Texas Instruments Incorporated
  All rights reserved.
 
@@ -40,8 +40,8 @@
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ******************************************************************************
- 
- 
+
+
  *****************************************************************************/
 
 /*******************************************************************************
@@ -50,25 +50,28 @@
 
 #include <xdc/runtime/Error.h>
 
+#include <ti/display/Display.h>
 #include <ti/drivers/Power.h>
 #include <ti/drivers/power/PowerCC26XX.h>
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Clock.h>
-#include <ti/display/Display.h>
 
-#include <icall.h>
-#include "hal_assert.h"
 #include "bcomdef.h"
+#include "hal_assert.h"
 #include "peripheral.h"
-#include "peripheral.h"
+#include <icall.h>
 
 // tasks
 #include "task_ble.h"
 #include "task_epd.h"
 
+// epd
+#include "epd_driver.h"
+#include "u8g2/u8g2.h"
+
 /* Header files required to enable instruction fetch cache */
-#include <inc/hw_memmap.h>
 #include <driverlib/vims.h>
+#include <inc/hw_memmap.h>
 
 #ifndef USE_DEFAULT_USER_CFG
 
@@ -95,13 +98,13 @@ bleUserCfg_t user0Cfg = BLE_USER_CFG;
  * CONSTANTS
  */
 
-#if defined( USE_FPGA )
-  #define RFC_MODE_BLE                 PRCM_RFCMODESEL_CURR_MODE1
-  #define RFC_MODE_ANT                 PRCM_RFCMODESEL_CURR_MODE4
-  #define RFC_MODE_EVERYTHING_BUT_ANT  PRCM_RFCMODESEL_CURR_MODE5
-  #define RFC_MODE_EVERYTHING          PRCM_RFCMODESEL_CURR_MODE6
-  //
-  #define SET_RFC_BLE_MODE(mode) HWREG( PRCM_BASE + PRCM_O_RFCMODESEL ) = (mode)
+#if defined(USE_FPGA)
+#define RFC_MODE_BLE PRCM_RFCMODESEL_CURR_MODE1
+#define RFC_MODE_ANT PRCM_RFCMODESEL_CURR_MODE4
+#define RFC_MODE_EVERYTHING_BUT_ANT PRCM_RFCMODESEL_CURR_MODE5
+#define RFC_MODE_EVERYTHING PRCM_RFCMODESEL_CURR_MODE6
+//
+#define SET_RFC_BLE_MODE(mode) HWREG(PRCM_BASE + PRCM_O_RFCMODESEL) = (mode)
 #endif // USE_FPGA
 
 /*******************************************************************************
@@ -122,17 +125,17 @@ bleUserCfg_t user0Cfg = BLE_USER_CFG;
 Power_NotifyObj rFSwitchPowerNotifyObj;
 static uint8_t rFSwitchNotifyCb(uint8_t eventType, uint32_t *eventArg,
                                 uint32_t *clientArg);
-#endif //POWER_SAVING
+#endif // POWER_SAVING
 
-PIN_State  radCtrlState;
-PIN_Config radCtrlCfg[] =
-{
-  Board_DIO1_RFSW   | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL | PIN_DRVSTR_MAX, /* RF SW Switch defaults to 2.4GHz path*/
-  Board_DIO30_SWPWR | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX, /* Power to the RF Switch */
-  PIN_TERMINATE
-};
+PIN_State radCtrlState;
+PIN_Config radCtrlCfg[] = {
+    Board_DIO1_RFSW | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL |
+        PIN_DRVSTR_MAX, /* RF SW Switch defaults to 2.4GHz path*/
+    Board_DIO30_SWPWR | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL |
+        PIN_DRVSTR_MAX, /* Power to the RF Switch */
+    PIN_TERMINATE};
 PIN_Handle radCtrlHandle;
-#endif //CC1350_LAUNCHXL
+#endif // CC1350_LAUNCHXL
 
 /*******************************************************************************
  * EXTERNS
@@ -157,9 +160,8 @@ extern void AssertHandler(uint8 assertCause, uint8 assertSubcause);
  *
  * @return      None.
  */
-int main()
-{
-#if defined( USE_FPGA )
+int main() {
+#if defined(USE_FPGA)
   HWREG(PRCM_BASE + PRCM_O_PDCTL0) &= ~PRCM_PDCTL0_RFC_ON;
   HWREG(PRCM_BASE + PRCM_O_PDCTL1) &= ~PRCM_PDCTL1_RFC_ON;
 #endif // USE_FPGA
@@ -176,11 +178,11 @@ int main()
 #ifdef POWER_SAVING
   Power_registerNotify(&rFSwitchPowerNotifyObj,
                        PowerCC26XX_ENTERING_STANDBY | PowerCC26XX_AWAKE_STANDBY,
-                       (Power_NotifyFxn) rFSwitchNotifyCb, NULL);
-#endif //POWER_SAVING
-#endif //CC1350_LAUNCHXL
+                       (Power_NotifyFxn)rFSwitchNotifyCb, NULL);
+#endif // POWER_SAVING
+#endif // CC1350_LAUNCHXL
 
-#if defined( USE_FPGA )
+#if defined(USE_FPGA)
   // set RFC mode to support BLE
   // Note: This must be done before the RF Core is released from reset!
   SET_RFC_BLE_MODE(RFC_MODE_BLE);
@@ -195,9 +197,9 @@ int main()
   VIMSConfigure(VIMS_BASE, TRUE, TRUE);
   // Enable cache
   VIMSModeSet(VIMS_BASE, VIMS_MODE_ENABLED);
-#endif //CACHE_AS_RAM
+#endif // CACHE_AS_RAM
 
-#if !defined( POWER_SAVING ) || defined( USE_FPGA )
+#if !defined(POWER_SAVING) || defined(USE_FPGA)
   /* Set constraints for Standby, powerdown and idle mode */
   // PowerCC26XX_SB_DISALLOW may be redundant
   Power_setConstraint(PowerCC26XX_SB_DISALLOW);
@@ -207,8 +209,8 @@ int main()
 #ifdef ICALL_JT
   /* Update User Configuration of the stack */
   user0Cfg.appServiceInfo->timerTickPeriod = Clock_tickPeriod;
-  user0Cfg.appServiceInfo->timerMaxMillisecond  = ICall_getMaxMSecs();
-#endif  /* ICALL_JT */
+  user0Cfg.appServiceInfo->timerMaxMillisecond = ICall_getMaxMSecs();
+#endif /* ICALL_JT */
   /* Initialize ICall module */
   ICall_init();
 
@@ -229,7 +231,6 @@ int main()
 
   return 0;
 }
-
 
 /*******************************************************************************
  * @fn          AssertHandler
@@ -267,12 +268,10 @@ int main()
  *
  * @return      None.
  */
-void AssertHandler(uint8 assertCause, uint8 assertSubcause)
-{
+void AssertHandler(uint8 assertCause, uint8 assertSubcause) {
 #if !defined(Display_DISABLE_ALL)
   // Open the display if the app has not already done so
-  if ( !dispHandle )
-  {
+  if (!dispHandle) {
     dispHandle = Display_open(Display_Type_LCD, NULL);
   }
 
@@ -280,68 +279,63 @@ void AssertHandler(uint8 assertCause, uint8 assertSubcause)
 #endif // ! Display_DISABLE_ALL
 
   // check the assert cause
-  switch (assertCause)
-  {
-    case HAL_ASSERT_CAUSE_OUT_OF_MEMORY:
+  switch (assertCause) {
+  case HAL_ASSERT_CAUSE_OUT_OF_MEMORY:
+#if !defined(Display_DISABLE_ALL)
+    Display_print0(dispHandle, 0, 0, "***ERROR***");
+    Display_print0(dispHandle, 2, 0, ">> OUT OF MEMORY!");
+#endif // ! Display_DISABLE_ALL
+    break;
+
+  case HAL_ASSERT_CAUSE_INTERNAL_ERROR:
+    // check the subcause
+    if (assertSubcause == HAL_ASSERT_SUBCAUSE_FW_INERNAL_ERROR) {
 #if !defined(Display_DISABLE_ALL)
       Display_print0(dispHandle, 0, 0, "***ERROR***");
-      Display_print0(dispHandle, 2, 0, ">> OUT OF MEMORY!");
+      Display_print0(dispHandle, 2, 0, ">> INTERNAL FW ERROR!");
 #endif // ! Display_DISABLE_ALL
-      break;
-
-    case HAL_ASSERT_CAUSE_INTERNAL_ERROR:
-      // check the subcause
-      if (assertSubcause == HAL_ASSERT_SUBCAUSE_FW_INERNAL_ERROR)
-      {
-#if !defined(Display_DISABLE_ALL)
-        Display_print0(dispHandle, 0, 0, "***ERROR***");
-        Display_print0(dispHandle, 2, 0, ">> INTERNAL FW ERROR!");
-#endif // ! Display_DISABLE_ALL
-      }
-      else
-      {
-#if !defined(Display_DISABLE_ALL)
-        Display_print0(dispHandle, 0, 0, "***ERROR***");
-        Display_print0(dispHandle, 2, 0, ">> INTERNAL ERROR!");
-#endif // ! Display_DISABLE_ALL
-      }
-      break;
-
-    case HAL_ASSERT_CAUSE_ICALL_ABORT:
+    } else {
 #if !defined(Display_DISABLE_ALL)
       Display_print0(dispHandle, 0, 0, "***ERROR***");
-      Display_print0(dispHandle, 2, 0, ">> ICALL ABORT!");
+      Display_print0(dispHandle, 2, 0, ">> INTERNAL ERROR!");
 #endif // ! Display_DISABLE_ALL
-      HAL_ASSERT_SPINLOCK;
-      break;
+    }
+    break;
 
-    case HAL_ASSERT_CAUSE_ICALL_TIMEOUT:
+  case HAL_ASSERT_CAUSE_ICALL_ABORT:
 #if !defined(Display_DISABLE_ALL)
-      Display_print0(dispHandle, 0, 0, "***ERROR***");
-      Display_print0(dispHandle, 2, 0, ">> ICALL TIMEOUT!");
+    Display_print0(dispHandle, 0, 0, "***ERROR***");
+    Display_print0(dispHandle, 2, 0, ">> ICALL ABORT!");
 #endif // ! Display_DISABLE_ALL
-      HAL_ASSERT_SPINLOCK;
-      break;
+    HAL_ASSERT_SPINLOCK;
+    break;
 
-    case HAL_ASSERT_CAUSE_WRONG_API_CALL:
+  case HAL_ASSERT_CAUSE_ICALL_TIMEOUT:
 #if !defined(Display_DISABLE_ALL)
-      Display_print0(dispHandle, 0, 0, "***ERROR***");
-      Display_print0(dispHandle, 2, 0, ">> WRONG API CALL!");
+    Display_print0(dispHandle, 0, 0, "***ERROR***");
+    Display_print0(dispHandle, 2, 0, ">> ICALL TIMEOUT!");
 #endif // ! Display_DISABLE_ALL
-      HAL_ASSERT_SPINLOCK;
-      break;
+    HAL_ASSERT_SPINLOCK;
+    break;
+
+  case HAL_ASSERT_CAUSE_WRONG_API_CALL:
+#if !defined(Display_DISABLE_ALL)
+    Display_print0(dispHandle, 0, 0, "***ERROR***");
+    Display_print0(dispHandle, 2, 0, ">> WRONG API CALL!");
+#endif // ! Display_DISABLE_ALL
+    HAL_ASSERT_SPINLOCK;
+    break;
 
   default:
 #if !defined(Display_DISABLE_ALL)
-      Display_print0(dispHandle, 0, 0, "***ERROR***");
-      Display_print0(dispHandle, 2, 0, ">> DEFAULT SPINLOCK!");
+    Display_print0(dispHandle, 0, 0, "***ERROR***");
+    Display_print0(dispHandle, 2, 0, ">> DEFAULT SPINLOCK!");
 #endif // ! Display_DISABLE_ALL
-      HAL_ASSERT_SPINLOCK;
+    HAL_ASSERT_SPINLOCK;
   }
 
   return;
 }
-
 
 /*******************************************************************************
  * @fn          smallErrorHook
@@ -358,12 +352,12 @@ void AssertHandler(uint8 assertCause, uint8 assertSubcause)
  *
  * @return      None.
  */
-void smallErrorHook(Error_Block *eb)
-{
-  for (;;);
+void smallErrorHook(Error_Block *eb) {
+  for (;;)
+    ;
 }
 
-#if defined (CC1350_LAUNCHXL) && defined (POWER_SAVING)
+#if defined(CC1350_LAUNCHXL) && defined(POWER_SAVING)
 /*******************************************************************************
  * @fn          rFSwitchNotifyCb
  *
@@ -379,15 +373,11 @@ void smallErrorHook(Error_Block *eb)
  * @return  Power_NOTIFYDONE to indicate success.
  */
 static uint8_t rFSwitchNotifyCb(uint8_t eventType, uint32_t *eventArg,
-                                uint32_t *clientArg)
-{
-  if (eventType == PowerCC26XX_ENTERING_STANDBY)
-  {
+                                uint32_t *clientArg) {
+  if (eventType == PowerCC26XX_ENTERING_STANDBY) {
     // Power down RF Switch
     PIN_setOutputValue(radCtrlHandle, Board_DIO30_SWPWR, 0);
-  }
-  else if (eventType == PowerCC26XX_AWAKE_STANDBY)
-  {
+  } else if (eventType == PowerCC26XX_AWAKE_STANDBY) {
     // Power up RF Switch
     PIN_setOutputValue(radCtrlHandle, Board_DIO30_SWPWR, 1);
   }
@@ -395,8 +385,7 @@ static uint8_t rFSwitchNotifyCb(uint8_t eventType, uint32_t *eventArg,
   // Notification handled successfully
   return Power_NOTIFYDONE;
 }
-#endif //CC1350_LAUNCHXL || POWER_SAVING
-
+#endif // CC1350_LAUNCHXL || POWER_SAVING
 
 /*******************************************************************************
  */

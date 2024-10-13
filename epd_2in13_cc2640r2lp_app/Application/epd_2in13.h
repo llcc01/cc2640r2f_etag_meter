@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+#define EPD_WIDTH 250
+#define EPD_HEIGHT 128
+#define EPD_PAD_LEFT 46
+#define EPD_PAD_TOP 8
+
 void EPD_2IN13_Lut(const unsigned char *lut);
 void EPD_2IN13_Lut_ById(int id);
 void EPD_2IN13_SoftReset();

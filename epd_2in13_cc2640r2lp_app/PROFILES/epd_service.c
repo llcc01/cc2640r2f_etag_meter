@@ -279,11 +279,7 @@ static bStatus_t EPDService_ReadAttrCB(uint16_t connHandle,
   // }
 
   case EPD_BATT_UUID: {
-    uint16_t v = INTFRAC2MV(epd_battery);
-    if (v > 3000) {
-      v = 3000;
-    }
-    uint8 v_percent = (v - 2500) * 100 / (3000 - 2500);
+    uint8 v_percent = EPD_BATT_Percent();
     *pLen = sizeof(v_percent);
     memcpy(pValue, &v_percent, *pLen);
     break;

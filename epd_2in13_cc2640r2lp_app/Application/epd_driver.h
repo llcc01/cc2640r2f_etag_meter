@@ -2,6 +2,9 @@
 #define _EPD_DRIVER_H_
 
 #include <stdint.h>     // uint8_t
+#include <stdbool.h>
+
+#include "u8g2/u8g2.h"
 
 #define EPD_2IN13_SSD1680
 //#define EPD_2IN13_SSD1680_BW
@@ -26,7 +29,7 @@
 
 // EPD Frame buffer MAX size
 #define EPD_BUF_MAX (300 * 128 / 8)
-extern uint8_t epd_buffer[EPD_BUF_MAX];
+// extern uint8_t epd_buffer[EPD_BUF_MAX];
 
 // local time to UTC offset, in +/- minutes.
 extern int32_t utc_offset_mins;
@@ -150,5 +153,10 @@ int EPD_SNV_SaveLut(int index, const uint8_t *lut, int len);
 void EPD_Command(const uint8_t *cmd, int cmd_len);
 
 extern int8_t epd_rtc_collab;
+
+uint8_t u8x8_cc2640_gpio_and_delay(U8X8_UNUSED u8x8_t *u8x8,
+                                   U8X8_UNUSED uint8_t msg,
+                                   U8X8_UNUSED uint8_t arg_int,
+                                   U8X8_UNUSED void *arg_ptr);
 
 #endif 

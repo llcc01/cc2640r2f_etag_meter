@@ -1,10 +1,6 @@
 // EPD 2in13 SSD1680 250x122
 
 #include "epd_service.h"
-#define EPD_WIDTH 250
-#define EPD_HEIGHT 128
-#define EPD_PAD_LEFT 46
-#define EPD_PAD_TOP 8
 
 #include <ti/drivers/PIN.h>
 #include <ti/sysbios/hal/Seconds.h> // Seconds_get
@@ -361,7 +357,7 @@ void EPD_SSD_Update_Clock(void) {
   EPD_SSD_Reset();
 
   char buf[32];
-  obdCreateVirtualDisplay(&obd, EPD_WIDTH, EPD_HEIGHT, epd_buffer);
+  // obdCreateVirtualDisplay(&obd, EPD_WIDTH, EPD_HEIGHT, epd_buffer);
   obdFill(&obd, 0, 0);
 
 #if 0
@@ -413,10 +409,10 @@ void EPD_SSD_Update_Clock(void) {
   // obdWriteStringCustom(&obd, (GFXfont *)&Hei24pt, 158, 21, fmt, 1);
 
   // edian and invent
-  for (int i = 0; i < sizeof(epd_buffer); i++) {
-    uint8_t c = epd_buffer[i];
-    epd_buffer[i] = ~ucMirror[c];
-  }
+  // for (int i = 0; i < sizeof(epd_buffer); i++) {
+  //   uint8_t c = epd_buffer[i];
+  //   epd_buffer[i] = ~ucMirror[c];
+  // }
 
   // full or fast update
   EPD_2IN13_BWR(EPD_WIDTH, EPD_HEIGHT, 0, 0);
@@ -426,8 +422,8 @@ void EPD_SSD_Update_Clock(void) {
   } else if (upd_type == 1) {
     EPD_2IN13_Lut(lut_full_bwr);
   }
-  EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
-  EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
+  // EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
+  // EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
 
   // show
   EPD_2IN13_Display(upd_type ? 0xc7
@@ -460,21 +456,21 @@ void EPD_2IN13_Update_Image() {
     break;
 
   case EPD_CMD_BW: // write BW ram
-    EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
+    // EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
     break;
 
   case EPD_CMD_RED: // write Red ram
-    EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
+    // EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
     break;
 
   case EPD_CMD_FILL: { // write ram with color
     uint8_t color = epd_step_data[0];
     if (color == 1) { // red
-      memset(epd_buffer, 0xff, EPD_WIDTH * EPD_HEIGHT / 8);
-      EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
+      // memset(epd_buffer, 0xff, EPD_WIDTH * EPD_HEIGHT / 8);
+      // EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
     } else {
-      memset(epd_buffer, 0, EPD_WIDTH * EPD_HEIGHT / 8);
-      EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
+      // memset(epd_buffer, 0, EPD_WIDTH * EPD_HEIGHT / 8);
+      // EPD_2IN13_WriteRam(epd_buffer, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
     }
     break;
   }
