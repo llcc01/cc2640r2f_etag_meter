@@ -15,6 +15,7 @@
 
 // #include "board.h"
 #include "epd_driver.h"
+#include "u8g2/u8g2.h"
 #include "task_epd.h"
 
 #define EPD_TASK_PRIORITY 1
@@ -79,12 +80,17 @@ void TaskEPD_taskInit(void) {
 
   u8g2_ClearBuffer(&u8g2);
 
-  u8g2_DrawCircle(&u8g2, 64, 32, 10, U8G2_DRAW_ALL);
+  u8g2_SetFont(&u8g2,u8g2_font_wqy16_t_chinese3);
+
+  u8g2_DrawCircle(&u8g2, 64, 100, 10, U8G2_DRAW_ALL);
+  // u8g2_DrawLine(&u8g2, 0, 0, 128, 64);
+  u8g2_DrawStr(&u8g2, 16, 32, "Hello, World!");
+  u8g2_DrawUTF8(&u8g2, 16, 48, "你好，世界！");
 
   u8g2_SendBuffer(&u8g2);
 
   while (1) {
-    Task_sleep(1000);
+    Task_sleep(100);
   }
 
   // init EPD

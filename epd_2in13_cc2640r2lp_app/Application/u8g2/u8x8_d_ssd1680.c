@@ -433,6 +433,24 @@ static const u8x8_display_info_t u8x8_ssd1680_250x122_noname_display_info = {
     /* pixel_width = */ 250,
     /* pixel_height = */ 122};
 
+static uint8_t *u8x8_convert_tile_for_ssd1680(uint8_t *t, uint16_t n) {
+  uint16_t i;
+  static uint8_t buf[256];
+
+  if (n > 256) {
+    n = 256;
+  }
+
+  for (i = 0; i < n; i++) {
+    uint8_t input_bits = ~*t++;
+    buf[i] = ((input_bits & 0x01) << 7) | ((input_bits & 0x02) << 5) |
+                   ((input_bits & 0x04) << 3) | ((input_bits & 0x08) << 1) |
+                   ((input_bits & 0x10) >> 1) | ((input_bits & 0x20) >> 3) |
+                   ((input_bits & 0x40) >> 5) | ((input_bits & 0x80) >> 7);
+  }
+  return buf;
+}
+
 uint8_t u8x8_d_ssd1680_250x122_noname(u8x8_t *u8x8, uint8_t msg,
                                       uint8_t arg_int, void *arg_ptr) {
 
@@ -452,22 +470,30 @@ uint8_t u8x8_d_ssd1680_250x122_noname(u8x8_t *u8x8, uint8_t msg,
     x *= 8;
     x += u8x8->x_offset;
     uint8_t y = ((u8x8_tile_t *)arg_ptr)->y_pos;
-    uint8_t w = ((u8x8_tile_t *)arg_ptr)->cnt * 8;
-    uint8_t h = 8;
-    // EPD_2IN13_BWR(w, h, x, y);
-    EPD_2IN13_BWR(EPD_WIDTH, EPD_HEIGHT, 0, 0);
-    EPD_2IN13_WriteRam(((u8x8_tile_t *)arg_ptr)->tile_ptr, w, h, x, y, 0);
+    y *= 8;
+    uint16_t w = ((u8x8_tile_t *)arg_ptr)->cnt * 8;
+    if (w > EPD_WIDTH) {
+      w = EPD_WIDTH;
+    }
+    uint16_t h = 8;
+    EPD_2IN13_BWR(w, h, x, y);
+    // EPD_2IN13_BWR(EPD_WIDTH, EPD_HEIGHT, 0, 0);
+    EPD_2IN13_WriteRam(
+        u8x8_convert_tile_for_ssd1680(((u8x8_tile_t *)arg_ptr)->tile_ptr, w), w,
+        h, x, y, 0);
   } break;
   case U8X8_MSG_DISPLAY_REFRESH:
-    EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
+    // EPD_2IN13_BWR(EPD_WIDTH, EPD_HEIGHT, 0, 0);
+    // EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
     EPD_2IN13_Display(0xf7); // c7: by REG  f7: by OTP   b1: no display
     EPD_SSD_WaitBusy(15 * 1000);
     break;
 
   case U8X8_MSG_DISPLAY_INIT:
     EPD_Init();
+    EPD_2IN13_BWR(EPD_WIDTH, EPD_HEIGHT, 0, 0);
+    EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
     // EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 0);
-    // EPD_2IN13_WriteRam(NULL, EPD_WIDTH, EPD_HEIGHT, 0, 0, 1);
     // EPD_2IN13_Display(0xf7); // c7: by REG  f7: by OTP   b1: no display
     // EPD_SSD_WaitBusy(15 * 1000);
     break;

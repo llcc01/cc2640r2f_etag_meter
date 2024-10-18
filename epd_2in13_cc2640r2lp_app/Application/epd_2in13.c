@@ -16,17 +16,17 @@
 #include <time.h>   // time
 
 // OBD
-#include "OneBitDisplay.h"
+//#include "OneBitDisplay.h"
 // #include "font64.h"
-#include "font16.h"
-#include "font24.h"
-#include "font24zh.h"
-#include "font40.h"
+//#include "font16.h"
+//#include "font24.h"
+//#include "font24zh.h"
+//#include "font40.h"
 
 #include "epd_2in13.h"
 
 // One Bit Display
-OBDISP obd = {0};
+//OBDISP obd = {0};
 
 extern const uint8_t ucMirror[];
 
@@ -245,6 +245,7 @@ void EPD_2IN13_BWR(int width, int height, int left, int top) {
   // Data entry mode
   EPD_SSD_SendCommand(0x11);
   EPD_SSD_SendData(0x07); // am=1, id=11
+  // EPD_SSD_SendData(0x05); // am=1, id=01
 
   // Set RAM X Address Start/End
   EPD_SSD_SendCommand(0x44);
@@ -358,13 +359,13 @@ void EPD_SSD_Update_Clock(void) {
 
   char buf[32];
   // obdCreateVirtualDisplay(&obd, EPD_WIDTH, EPD_HEIGHT, epd_buffer);
-  obdFill(&obd, 0, 0);
+//  obdFill(&obd, 0, 0);
 
 #if 0
     // date
     const char *wstr[]={"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
     System_snprintf(buf, 32, "%u-%02u-%02u %s", 1900+l->tm_year, l->tm_mon+1, l->tm_mday, wstr[l->tm_wday]);
-    obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_24, 0, 24, buf, 1);
+//    obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_24, 0, 24, buf, 1);
 #endif
 
   // BLE dev name
@@ -376,7 +377,7 @@ void EPD_SSD_Update_Clock(void) {
   System_snprintf(buf, 32, "%02x%02x%02x", mac_address[3], mac_address[4],
                   mac_address[5]);
 #endif
-  obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_16, 0, 118, buf, 1);
+//  obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_16, 0, 118, buf, 1);
 
   // temperature
   epd_temperature = EPD_2IN13_ReadTemp();
@@ -386,8 +387,8 @@ void EPD_SSD_Update_Clock(void) {
 
   // battery
   uint8_t v = EPD_BATT_Percent();
-  System_snprintf(buf, 32, "%3u%%", v);
-  obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_16, 200, 118, buf, 1);
+//  System_snprintf(buf, 32, "%3u%%", v);
+//  obdWriteStringCustom(&obd, (GFXfont *)&Dialog_plain_16, 200, 118, buf, 1);
 
   // time
   // System_snprintf(buf, 32, "%02d:%02d", l->tm_hour, l->tm_min);
@@ -395,9 +396,9 @@ void EPD_SSD_Update_Clock(void) {
   // 28+70, buf, 1);
 
   // meter
-  System_snprintf(buf, 32, "%05dM", retainDistance);
-  obdWriteStringCustom(&obd, (GFXfont *)&DSEG14_Classic_Mini_Regular_40, 12,
-                       28 + 70, buf, 1);
+//  System_snprintf(buf, 32, "%05dM", retainDistance);
+//  obdWriteStringCustom(&obd, (GFXfont *)&DSEG14_Classic_Mini_Regular_40, 12,
+//                       28 + 70, buf, 1);
 
   // date
   // System_snprintf(buf, 32, "%u-%02u-%02u", 1900+l->tm_year, l->tm_mon+1,
